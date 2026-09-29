@@ -6,3 +6,7 @@ Ein Le.pApP-Tool.
 
 Konzept & Design: P. Weins · realisiert mit Claude (Anthropic)
 Le.pApP · ©w1pet
+
+## Rechte
+
+© P. Weins – alle Rechte vorbehalten. Näheres in der Datei [LICENSE](LICENSE).
