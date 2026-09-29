@@ -1,0 +1,742 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gehaltene Balance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,500;1,7..72,400&family=Caveat:wght@500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Pigmente nach Schmincke Horadam: 217 Chinacridongoldton · 510 Kobaltgrün Türkis · 353 Permanent Karmin · 494 Ultramarin feinst · Schrift in 787 Paynesgrau */
+:root{
+  --ground:#EEECE6; --paper:#F8F7F3; --ink:#26303A; --ink-2:#5E6972; --rule:#CFCCC3; --hair:#E0DDD5;
+  --a:#D48A22; --b:#1C7F7B; --c:#D2405C; --d:#2F47A2;
+  --blend:multiply;
+  --display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --body:"Literata", Georgia, "Times New Roman", serif;
+  --hand:"Caveat", "Segoe Print", "Bradley Hand", cursive;
+  --mono:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --ground:#15181B; --paper:#1C2024; --ink:#E7E5DF; --ink-2:#A0A8AE; --rule:#3A4045; --hair:#2A2F33;
+    --a:#EDB257; --b:#4DB8B1; --c:#F07A90; --d:#8C9CEB;
+    --blend:normal;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --ground:#15181B; --paper:#1C2024; --ink:#E7E5DF; --ink-2:#A0A8AE; --rule:#3A4045; --hair:#2A2F33;
+  --a:#EDB257; --b:#4DB8B1; --c:#F07A90; --d:#8C9CEB;
+  --blend:normal;
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55}
+.wrap{max-width:1240px;margin:0 auto;padding-inline:clamp(16px,3vw,40px);padding-block:28px 40px}
+
+header.top{display:grid;grid-template-columns:1fr auto;gap:8px 24px;align-items:end;padding-bottom:14px;position:relative}
+header.top svg.brush{position:absolute;left:0;right:0;bottom:0;width:100%;height:10px}
+.eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2)}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(34px,5.4vw,62px);line-height:1;letter-spacing:-.02em;margin:6px 0 0;text-wrap:balance}
+.claim{font-family:var(--hand);font-size:clamp(22px,2.5vw,28px);font-weight:500;color:var(--ink-2);margin:0;text-align:right;line-height:1.15}
+.claim b{color:var(--ink);font-weight:600}
+
+main.stage{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:36px;margin-top:22px;align-items:start}
+.mapbox{position:relative;touch-action:manipulation}
+svg#map{width:100%;height:auto;display:block;overflow:visible}
+svg text{font-family:var(--mono)}
+
+.cellg{cursor:pointer;transition:opacity .5s ease, transform .6s cubic-bezier(.2,.8,.2,1.2);transform-box:fill-box;transform-origin:center}
+.cellg .wash{mix-blend-mode:var(--blend)}
+.cellg:hover{transform:scale(1.03)}
+.cellg:focus-visible{outline:none}
+.cellg:focus-visible .edge,.cellg.sel .edge{stroke:var(--ink);stroke-opacity:.85;stroke-width:1.6}
+.petal{transition:opacity .5s ease}
+.petal path{transform-box:fill-box;transform-origin:50% 100%;animation:sway 7s ease-in-out infinite}
+@keyframes sway{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}
+.author{cursor:pointer;transition:opacity .5s ease}
+.author:focus-visible{outline:none}
+.author .blot{transition:transform .5s cubic-bezier(.2,.8,.2,1.4);transform-box:fill-box;transform-origin:center}
+.author:hover .blot,.author:focus-visible .blot{transform:scale(1.35)}
+.dim{opacity:.13}
+.axislabel{font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:.32em;text-transform:uppercase;cursor:pointer;transition:opacity .5s}
+.core-center{cursor:pointer}
+.core-center:focus-visible{outline:none}
+.core-center:hover .cblob,.core-center:focus-visible .cblob{stroke-opacity:.9}
+.breath{transform-box:fill-box;transform-origin:center;animation:breath 7s ease-in-out infinite}
+@keyframes breath{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+.tension .line{fill:none;stroke:var(--ink);stroke-width:1.3;stroke-linecap:round;opacity:.28;transition:opacity .5s, stroke-width .3s}
+.tension .tmark{cursor:pointer;opacity:.6;transition:opacity .5s}
+.tension .tmark:focus-visible{outline:none}
+.tension .tmark:hover circle,.tension .tmark:focus-visible circle{stroke-width:2.2}
+svg.show-t .cellg,svg.show-t .petal{opacity:.2}
+svg.show-t .tension .line{opacity:.85;stroke-width:1.7}
+svg.show-t .tension .tmark{opacity:1}
+svg.show-t .tension.off .line{opacity:.16}
+svg.show-t .tension.off .tmark{opacity:.35}
+svg .tension.on .line{opacity:1;stroke-width:2.6}
+svg .tension.on .tmark{opacity:1}
+.ripple{pointer-events:none;transform-box:fill-box;transform-origin:center}
+
+.legend{display:flex;flex-wrap:wrap;gap:6px 22px;margin-top:6px;padding-top:10px;font-family:var(--hand);font-size:19px;color:var(--ink-2);line-height:1.2}
+.legend span{display:inline-flex;align-items:center;gap:8px}
+.legend svg{flex:none;overflow:visible}
+.pigments{margin-top:6px;font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;color:var(--ink-2);display:flex;flex-wrap:wrap;gap:4px 14px}
+.pigments i{display:inline-block;width:9px;height:9px;border-radius:50% 40% 55% 45%;margin-right:5px;vertical-align:-1px}
+
+aside.panel{position:sticky;top:calc(env(safe-area-inset-top, 0px) + 16px);background:var(--paper);border-radius:26px 20px 30px 18px / 20px 28px 18px 26px;display:flex;flex-direction:column;max-height:calc(100vh - 32px);box-shadow:0 1px 0 var(--hair),0 12px 40px -24px rgba(20,30,40,.35);overflow:hidden;isolation:isolate;--acc:var(--ink-2);transition:--acc .6s}
+aside.panel::before{content:"";position:absolute;z-index:-1;left:-40px;top:-70px;width:340px;height:230px;border-radius:48% 52% 60% 40% / 55% 45% 55% 45%;background:radial-gradient(closest-side, color-mix(in srgb, var(--acc) 30%, transparent), color-mix(in srgb, var(--acc) 8%, transparent) 70%, transparent);filter:blur(6px);transition:background .6s ease}
+.steps{display:flex;align-items:center;gap:10px;padding:14px 18px 10px}
+.steps button.nav{font-family:var(--mono);font-size:14px;background:var(--paper);border:1.3px solid var(--rule);color:var(--ink);border-radius:50% 46% 52% 48%;width:36px;height:34px;cursor:pointer;transition:transform .4s cubic-bezier(.2,.8,.2,1.4), border-color .3s}
+.steps button.nav:hover{border-color:var(--ink);transform:scale(1.08) rotate(-4deg)}
+.steps button.nav:focus-visible,.dots button:focus-visible,.chip:focus-visible,.linkbtn:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.steps button.nav:disabled{opacity:.3;cursor:default;transform:none}
+.dots{display:flex;gap:7px;flex:1;justify-content:center;flex-wrap:wrap}
+.dots button{width:11px;height:11px;border-radius:52% 48% 45% 55%;border:1.3px solid var(--dc,var(--ink-2));background:transparent;padding:0;cursor:pointer;transition:transform .4s cubic-bezier(.2,.8,.2,1.5), background .3s}
+.dots button:hover{transform:scale(1.3)}
+.dots button[aria-current="step"]{background:var(--dc,var(--ink));transform:scale(1.35)}
+.steplabel{font-family:var(--hand);font-size:19px;color:var(--ink-2);min-width:40px;text-align:right}
+.pbody{padding:14px 26px 28px;overflow-y:auto}
+.pbody > *{animation:rise .7s cubic-bezier(.2,.8,.2,1) both}
+.pbody > *:nth-child(2){animation-delay:.04s}.pbody > *:nth-child(3){animation-delay:.08s}.pbody > *:nth-child(4){animation-delay:.12s}.pbody > *:nth-child(n+5){animation-delay:.16s}
+@keyframes rise{from{transform:translateY(8px)}to{transform:none}}
+.pbody h2{font-family:var(--display);font-weight:700;font-size:28px;line-height:1.1;letter-spacing:-.01em;margin:6px 0 12px;text-wrap:balance}
+.pbody h3{font-family:var(--hand);font-weight:600;font-size:22px;color:var(--ink-2);margin:22px 0 6px;line-height:1.1}
+.pbody p{margin:0 0 10px;max-width:62ch}
+.lead{font-size:17px}
+.quote{font-family:var(--display);font-size:19px;line-height:1.3;padding:10px 16px;margin:14px 0;border-radius:40% 55% 45% 60% / 20% 30% 25% 35%;background:color-mix(in srgb, var(--acc2,var(--ink)) 11%, transparent)}
+.pair{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;align-items:baseline;margin:6px 0 4px}
+.pair dt{font-family:var(--hand);font-size:19px;color:var(--ink-2)}
+.pair dd{margin:0}
+.pair dd b{font-family:var(--display);font-weight:600;font-size:17px}
+.lvls{list-style:none;padding:0;margin:0;display:grid;gap:6px}
+.lvls li{display:grid;grid-template-columns:22px 1fr;gap:10px;align-items:start;cursor:pointer;padding:7px 8px;border-radius:14px 18px 12px 20px;transition:background .3s}
+.lvls li:hover,.lvls li:focus-visible{background:var(--ground);outline:none}
+.lvls .sw{width:20px;height:20px;border-radius:55% 45% 50% 50% / 45% 55% 45% 55%;margin-top:3px;background:var(--acc2,var(--ink))}
+.lvls small{display:block;font-family:var(--mono);font-size:10.5px;color:var(--ink-2);letter-spacing:.08em}
+.bst{list-style:none;padding:0;margin:0;display:grid;gap:12px}
+.bst li{display:grid;grid-template-columns:16px 1fr;gap:10px}
+.bst b{font-family:var(--display);font-weight:600}
+.tag{font-family:var(--hand);font-size:17px;color:var(--ink-2)}
+.leaf{margin-top:4px}
+.note{font-size:14px;color:var(--ink-2);padding-top:10px;margin-top:16px;background:linear-gradient(90deg,var(--rule) 50%,transparent 0) top/8px 1px repeat-x}
+.halt{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+.halt button{all:unset;cursor:pointer;padding:12px 14px;border-radius:30px 22px 34px 20px / 22px 30px 20px 28px;background:color-mix(in srgb, var(--acc2) 12%, var(--paper));transition:transform .5s cubic-bezier(.2,.8,.2,1.4), background .3s}
+.halt button:hover{transform:scale(1.03) rotate(-.6deg);background:color-mix(in srgb, var(--acc2) 20%, var(--paper))}
+.halt button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.halt b{display:block;font-family:var(--display);font-weight:600;font-size:17px;color:var(--ink)}
+.halt span{font-size:13.5px;color:var(--ink-2)}
+.tlist{list-style:none;padding:0;margin:0;display:grid;gap:4px}
+.tlist li{display:grid;grid-template-columns:28px 1fr;gap:10px;cursor:pointer;padding:8px 8px;border-radius:14px 20px 12px 18px;transition:background .3s}
+.tlist li:hover,.tlist li.cur,.tlist li:focus-visible{background:var(--ground);outline:none}
+.num{width:24px;height:24px;border-radius:52% 48% 45% 55%;border:1.4px solid var(--ink);display:grid;place-items:center;font-family:var(--hand);font-size:17px;line-height:1}
+.tlist b{font-family:var(--display);font-weight:600}
+.tlist small{display:block;color:var(--ink-2);font-size:13.5px}
+.linkbtn{font-family:var(--hand);font-size:19px;background:none;border:none;color:var(--ink);padding:0;cursor:pointer;margin-top:6px;text-decoration:underline wavy var(--rule);text-underline-offset:5px}
+.chip{font-family:var(--hand);font-size:18px;border:1.3px solid var(--rule);background:none;color:var(--ink);border-radius:20px 16px 22px 14px;padding:2px 12px;cursor:pointer;transition:border-color .3s, transform .4s cubic-bezier(.2,.8,.2,1.4)}
+.chip:hover{border-color:var(--ink);transform:rotate(-1.5deg)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.indic{font-size:14.5px;background:var(--ground);padding:10px 14px;border-radius:18px 24px 16px 22px}
+
+section.cycle{margin-top:48px;padding-top:6px;position:relative}
+section.cycle h2{font-family:var(--display);font-weight:700;font-size:clamp(22px,2.6vw,30px);margin:6px 0 6px;letter-spacing:-.01em}
+section.cycle > p{max-width:70ch;margin:0 0 22px;color:var(--ink-2)}
+.chain{display:flex;align-items:center;gap:0;overflow-x:auto;padding:6px 2px 10px}
+.st{flex:1 1 0;min-width:150px;display:flex;flex-direction:column;gap:6px;padding:20px 22px;background:var(--paper);border-radius:34% 40% 30% 44% / 30% 34% 38% 42%;box-shadow:0 8px 24px -18px rgba(20,30,40,.4)}
+.st:nth-child(4n+2){border-radius:42% 30% 40% 34% / 36% 30% 42% 34%}
+.st:nth-child(4n){border-radius:30% 44% 36% 40% / 40% 36% 32% 38%}
+.st b{font-family:var(--display);font-weight:600;font-size:17px}
+.st span{font-size:13.5px;color:var(--ink-2);line-height:1.4}
+.st.end{background:transparent;box-shadow:none;border:1.5px dashed var(--rule)}
+.gate{flex:0 0 auto;width:92px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;position:relative;cursor:pointer;background:none;border:none;color:var(--ink);padding:6px 4px;font:inherit}
+.gate svg{width:100%;height:56px;overflow:visible}
+.gate small{position:relative;font-family:var(--hand);font-size:16px;text-align:center;line-height:1.05;color:var(--ink-2)}
+.gate .stroke{transition:transform .5s cubic-bezier(.2,.8,.2,1.5);transform-box:fill-box;transform-origin:center}
+.gate:hover .stroke,.gate:focus-visible .stroke{transform:scaleY(1.2) scaleX(1.5)}
+.gate:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-radius:12px}
+
+footer{margin-top:44px;padding-top:14px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;font-family:var(--mono);font-size:11.5px;color:var(--ink-2);background:linear-gradient(90deg,var(--rule) 50%,transparent 0) top/10px 1px repeat-x}
+
+@media (max-width: 900px){
+  main.stage{grid-template-columns:1fr}
+  aside.panel{position:static;max-height:none}
+  header.top{grid-template-columns:1fr}
+  .claim{text-align:left}
+}
+@media (max-width: 640px){
+  .chain{flex-direction:column;align-items:stretch}
+  .st{min-width:0}
+  .gate{width:auto;flex-direction:row;gap:10px;justify-content:flex-start;padding:2px 0 2px 16px}
+  .gate svg{width:56px;height:40px;transform:rotate(90deg)}
+  .gate small{text-align:left}
+  .halt{grid-template-columns:1fr}
+  .pbody{padding:12px 18px 22px}
+}
+@media (prefers-reduced-motion: reduce){
+  .breath,.petal path,.pbody > *{animation:none}
+  *{transition:none!important}
+}
+</style>
+<style>body{margin:0}</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow">Konzept ESE · Inklusive Gesamtschule · Jahrgänge 5–10</div>
+      <h1>Gehaltene Balance</h1>
+    </div>
+    <p class="claim"><b>Balance braucht Halt.</b><br>Vier Achsen, drei Ebenen, ein Rahmen.</p>
+    <svg class="brush" viewBox="0 0 1000 10" preserveAspectRatio="none" aria-hidden="true"><path d="M2 6 C 180 3, 330 8, 500 5 S 820 3, 998 6" fill="none" stroke="var(--rule)" stroke-width="1.6" stroke-linecap="round" filter="url(#pencil)"/></svg>
+  </header>
+
+  <main class="stage">
+    <div class="mapbox" id="mapbox">
+      <svg id="map" viewBox="0 0 840 820" role="group" aria-label="Konzeptkarte: vier Achsen im Kreis, drei Ebenen als Ringe, Autoren am Rand"></svg>
+      <div class="legend" aria-label="Legende">
+        <span><svg width="18" height="18" viewBox="0 0 18 18"><circle cx="9" cy="9" r="7" fill="var(--ink)" fill-opacity=".85" filter="url(#wc)"/></svg>Kernautor</span>
+        <span><svg width="18" height="18" viewBox="0 0 18 18"><circle cx="9" cy="9" r="6.5" fill="none" stroke="var(--ink)" stroke-width="2" filter="url(#pencil)"/></svg>Ergänzung</span>
+        <span><svg width="48" height="16" viewBox="0 0 48 16"><circle cx="8" cy="8" r="7" fill="var(--ink)" fill-opacity=".14" filter="url(#wc)"/><circle cx="24" cy="8" r="7" fill="var(--ink)" fill-opacity=".32" filter="url(#wc)"/><circle cx="40" cy="8" r="7" fill="var(--ink)" fill-opacity=".58" filter="url(#wc)"/></svg>nach innen intensiver</span>
+        <span><svg width="12" height="20" viewBox="-6 -10 12 20"><path d="M0,-9 C5,-4 5,4 0,9 C-5,4 -5,-4 0,-9Z" fill="var(--ink)" fill-opacity=".8"/></svg>Praxisbaustein</span>
+        <span><svg width="30" height="12" viewBox="0 0 30 12"><path d="M1 9 Q15 -3 29 9" fill="none" stroke="var(--ink)" stroke-width="1.3" filter="url(#pencil)"/></svg>Spannungsfeld</span>
+      </div>
+      <div class="pigments" aria-label="Verwendete Aquarellpigmente">
+        <span><i style="background:var(--a)"></i>217 Chinacridongoldton</span>
+        <span><i style="background:var(--b)"></i>510 Kobaltgrün Türkis</span>
+        <span><i style="background:var(--c)"></i>353 Permanent Karmin</span>
+        <span><i style="background:var(--d)"></i>494 Ultramarin feinst</span>
+      </div>
+    </div>
+
+    <aside class="panel" id="panel" aria-live="polite">
+      <div class="steps">
+        <button class="nav" id="prev" aria-label="Vorherige Station">←</button>
+        <div class="dots" id="dots" role="tablist" aria-label="Stationen"></div>
+        <span class="steplabel" id="steplabel"></span>
+        <button class="nav" id="next" aria-label="Nächste Station">→</button>
+      </div>
+      <div class="pbody" id="pbody"></div>
+    </aside>
+  </main>
+
+  <section class="cycle" id="cycle">
+    <div class="eyebrow">Wogegen das Konzept arbeitet</div>
+    <h2>Der Kreislauf aus Eskalation und Ausschluss</h2>
+    <p>Jede Achse unterbricht die Kette an einer anderen Stelle. Die Pinselstriche zeigen, wo. Ein Klick öffnet die Achse.</p>
+    <div class="chain" id="chain"></div>
+  </section>
+
+  <footer>
+    <span>Konzept &amp; Design: P. Weins · realisiert mit Claude (Anthropic)</span>
+    <span>Le.pApP · ©w1pet</span>
+  </footer>
+</div>
+
+<script>
+(() => {
+const LEVELS = {
+  1:{name:'universell', who:'Alle Schülerinnen und Schüler, jede Klasse'},
+  2:{name:'selektiv', who:'Jugendliche mit wiederkehrenden Auffälligkeiten'},
+  3:{name:'intensiv', who:'Einzelne in akuter Krise oder mit Systemsprenger-Dynamik'}
+};
+const OPA = {1:.2, 2:.38, 3:.6};
+const RAD = {3:[82,140], 2:[146,204], 1:[210,268]};
+
+const AXES = [
+ {id:'A', name:'Interaktion', span:[270,360], halt:'Struktur', haltText:'ein vorhersehbarer Unterrichtsrahmen',
+  core:'Krappmann', coreWhat:'Identitätsbalance, Rollendistanz, Ambiguitätstoleranz',
+  sup:['Kounin','Evertson'], supWhat:'Klassenführung: im Moment (Kounin) und vorbeugend ab Tag 1 (Evertson)',
+  question:'Unter welchen Bedingungen kann ein Jugendlicher Rollen erproben?',
+  nutzen:'Ein klarer äußerer Rahmen, in dem Rollendistanz und Ambiguitätstoleranz überhaupt erst erprobt werden können.',
+  schaerfung:'Kounin (Allgegenwärtigkeit, Überlappung, Reibungslosigkeit, Gruppenfokus) wirkt im Moment. Evertson (Regeln und Routinen ab Tag 1) wirkt vorbeugend. Beide gehören zusammen.',
+  cells:{1:'Klassenführung nach Kounin/Evertson, gemeinsame Regeln und Routinen',2:'Individuelle Verhaltensvereinbarung, Check-in/Check-out',3:'Individueller Tagesplan, reduzierte Anforderungen, sichere Orte'},
+  bst:[{t:'Startwochen-Protokoll Jg. 5 und 7',d:'Regeln, Abläufe und Signale werden in den ersten zwei Wochen geübt, nicht nur verkündet.',l:1},
+       {t:'Kounin-Kurzcheck',d:'Hospitationsbogen mit vier Merkmalen für kollegiale Unterrichtsbesuche.',l:1},
+       {t:'Rollenfenster',d:'Geplante Situationen (Gruppenrollen, Klassenrat, Streitschlichtung), in denen Jugendliche Rollendistanz üben.',l:1}],
+  indic:'Zahl der Unterrichtsausschlüsse und Ordnungsmaßnahmen pro Halbjahr'},
+ {id:'B', name:'Verstehen', span:[0,90], halt:'Verstehen', haltText:'Verhalten als Ausdruck innerer Not lesen, nicht nur als Regelbruch',
+  core:'Ahrbeck', coreWhat:'Psychoanalytische Pädagogik, innere Konflikte',
+  sup:['Baumann'], supWhat:'Systemsprenger, Intensivpädagogik, Mentalisierung',
+  question:'Welche Not drückt sich im Verhalten aus?',
+  nutzen:'Verstehen wird in konkrete Krisenpläne für extrem grenzüberschreitende Jugendliche übersetzt.',
+  schaerfung:'Baumann betont die Dynamik zwischen Kind und Hilfesystem. Damit wird auch die Schule selbst zum Gegenstand der Fallbesprechung.',
+  cells:{1:'Kollegiale Grundhaltung: Verhalten hat einen Sinn',2:'Kollegiale Fallberatung mit Sonderpädagogik',3:'Fallverstehen nach Baumann, Krisenplan'},
+  bst:[{t:'Verstehende Fallbesprechung',d:'Feste Struktur in drei Schritten: Beobachtung, Hypothese zur inneren Not, Handlungsidee.',l:2},
+       {t:'Reflexion der Systemdynamik',d:'Die Fallbesprechung fragt auch, wie die Schule selbst zur Eskalation beiträgt.',l:2},
+       {t:'Krisenplan pro Jugendlichem',d:'Frühwarnzeichen, was hilft, was eskaliert, wer kommt, sicherer Ort.',l:3}],
+  indic:'Anteil der Ebene-3-Fälle mit aktuellem Krisenplan'},
+ {id:'C', name:'Identität', span:[90,180], halt:'Beziehung', haltText:'die Person unbedingt annehmen, ihr Verhalten nicht',
+  core:'Garz', coreWhat:'Moralische Entwicklung, Biographie',
+  sup:['Rogers'], supWhat:'Personenzentrierte Haltung: Kongruenz, Wertschätzung, Empathie',
+  question:'Wie wird Identitätsarbeit in der Pubertät begleitet?',
+  nutzen:'Nicht wertende, personenzentrierte Gesprächsführung stützt die Identitätsarbeit in der Pubertät.',
+  schaerfung:'Die schwächste Verbindung: Rogers liefert die Haltung, nicht die Moraldidaktik. Kohlberg/Oser (Dilemmadiskussion, gerechte Gemeinschaft) ergänzen sie als Unterrichtsform.',
+  cells:{1:'Klassenrat, Dilemmadiskussionen, wertschätzende Gesprächskultur',2:'Regelmäßige Mentorengespräche (personenzentriert)',3:'Biographisch orientierte Begleitung'},
+  bst:[{t:'Dilemmadiskussion im Fachunterricht',d:'Politik, Religion/Philosophie, Deutsch: moralisches Urteilen als Unterrichtsgegenstand.',l:1},
+       {t:'Biographiearbeit ab Jg. 8',d:'„Wer war ich, wer will ich sein?“, verknüpft mit der Berufsorientierung.',l:1},
+       {t:'Mentorengespräch',d:'Kurz und regelmäßig, mit Kongruenz, Wertschätzung und Empathie als Haltung.',l:2}],
+  indic:'Selbsteinschätzung der Jugendlichen zu Zugehörigkeit und Beziehung zu Erwachsenen'},
+ {id:'D', name:'System', span:[180,270], halt:'Präsenz', haltText:'Erwachsene bleiben da, gemeinsam und beharrlich',
+  core:'Omer', coreWhat:'Neue Autorität, Präsenz, Unterstützungsnetz',
+  sup:['Ricking'], supWhat:'Schulabsentismus, Präventionsketten, Rückkehrstrategien',
+  question:'Wie bleibt Schule präsent, wenn der Jugendliche sich entzieht?',
+  nutzen:'Präsenz wird um die Prävention von Schulverweigerung und Drop-out in den höheren Klassen erweitert.',
+  schaerfung:'Trägt vor allem in Jg. 8–10. Die Frühwarnung über Fehlzeiten muss aber schon ab Jg. 5 laufen.',
+  cells:{1:'Fehlzeiten-Frühwarnung, transparente Elternkommunikation',2:'Ankündigung nach Omer, Unterstützerkreis, Rückkehrgespräch nach Fehlzeiten',3:'Runder Tisch mit Jugendhilfe, Wiedergutmachung, abgestimmte Rückkehrstrategie nach Ricking'},
+  bst:[{t:'Fehlzeiten-Ampel',d:'Schwellenwerte lösen gestufte Reaktionen aus: Anruf am ersten Tag, Gespräch, Runder Tisch.',l:1},
+       {t:'Deeskalations- und Präsenzprotokoll',d:'Deeskalation im Moment, Reaktion aufschieben („Das Eisen schmieden, wenn es kalt ist“), Ankündigung, Unterstützerkreis, Wiedergutmachung.',l:2},
+       {t:'Rückkehrgespräch',d:'Nach jeder längeren Abwesenheit oder Ordnungsmaßnahme. Ziel ist der Wiedereinstieg, nicht die Abrechnung.',l:2}],
+  indic:'Unentschuldigte Fehltage und Zahl der Schulabbrüche in Jg. 8–10'}
+];
+const AX = Object.fromEntries(AXES.map(a => [a.id, a]));
+
+const TENSIONS = [
+ {t:'Struktur vs. Verstehen', who:'Kounin ↔ Ahrbeck', what:'Klassenführung steuert Verhalten von außen. Psychoanalyse fragt nach seiner inneren Bedeutung.', res:'Verschiedene Ebenen: Struktur trägt Ebene 1 für alle, Verstehen vertieft sich ab Ebene 2 im Einzelfall. Struktur ist Voraussetzung für Verstehen, kein Gegensatz.'},
+ {t:'Wertschätzung vs. Widerstand', who:'Rogers ↔ Omer', what:'Rogers nimmt an, Omer leistet gewaltlosen Widerstand gegen destruktives Verhalten.', res:'Person und Verhalten werden getrennt: Die Person wird unbedingt angenommen, das Verhalten nicht. Beide setzen auf Beziehung statt Macht.'},
+ {t:'Stufen vs. Einzelbiographie', who:'Garz', what:'Moralische Stufenmodelle verallgemeinern. Biographische Rekonstruktion betont das Besondere.', res:'Stufen dienen als Orientierung für den Unterricht, die Biographie als Zugang im Einzelgespräch.'},
+ {t:'Schule vs. Jugendhilfe', who:'Baumann ↔ Ricking', what:'Bei Ebene-3-Fällen verschwimmen Zuständigkeiten. Schule droht zu delegieren oder sich zu übernehmen.', res:'Klare Schnittstelle: Runder Tisch mit festen Rollen. Schule bleibt Lernort, auch in der Krise.'},
+ {t:'Inklusion vs. Schutz der Gruppe', who:'Ahrbeck ↔ Konzept', what:'Ahrbeck hat selbst vor überzogenen Inklusionserwartungen bei ESE gewarnt.', res:'Das Konzept verspricht nicht, dass jeder Einzelfall in der Regelklasse gelingt. Es verpflichtet sich, jeden Schritt heraus zu begründen und den Rückweg zu planen.'}
+];
+
+const CHAIN = [
+ {gate:'A', why:'Struktur verhindert Eskalation'},
+ {st:'Eskalation', d:'Ein Konflikt im Unterricht schaukelt sich hoch.'},
+ {gate:'B', why:'Verstehen statt reflexhafter Strafe'},
+ {st:'Ausschluss', d:'Strafe, Unterrichtsausschluss, Ordnungsmaßnahme.'},
+ {gate:'C', why:'Beziehung hält nach der Konsequenz'},
+ {st:'Rückzug', d:'Innere Emigration, passiver Boykott.'},
+ {gate:'D', why:'Präsenz und Fehlzeiten-Ampel'},
+ {st:'Absentismus', d:'Fehltage häufen sich, die Schule verliert den Kontakt.'},
+ {gate:'D', why:'Runder Tisch und Rückkehr'},
+ {st:'Abbruch', d:'Drop-out, meist in Jg. 8–10.', end:true}
+];
+
+/* ---------- organic geometry ---------- */
+const C = 420, CY = 410;
+const rad = d => d * Math.PI / 180;
+const pol = (r, deg) => [C + r * Math.sin(rad(deg)), CY - r * Math.cos(rad(deg))];
+const f = n => n.toFixed(1);
+function rng(seed){ return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+// a smooth, closed wobble around the circle: sum of low harmonics
+function wobble(seed, amp){
+  const R = rng(seed), h = [2,3,5,7,11].map(n => ({n, a: amp * (0.35 + R()) / Math.sqrt(n), p: R() * 6.283}));
+  return deg => h.reduce((s, k) => s + k.a * Math.sin(k.n * rad(deg) + k.p), 0);
+}
+function smooth(pts, closed = true){
+  const n = pts.length; let d = `M${f(pts[0][0])} ${f(pts[0][1])}`;
+  const last = closed ? n : n - 1;
+  for (let i = 0; i < last; i++){
+    const p0 = pts[(i - 1 + n) % n], p1 = pts[i], p2 = pts[(i + 1) % n], p3 = pts[(i + 2) % n];
+    const q0 = (!closed && i === 0) ? p1 : p0, q3 = (!closed && i === n - 2) ? p2 : p3;
+    d += `C${f(p1[0] + (p2[0] - q0[0]) / 6)} ${f(p1[1] + (p2[1] - q0[1]) / 6)} ${f(p2[0] - (q3[0] - p1[0]) / 6)} ${f(p2[1] - (q3[1] - p1[1]) / 6)} ${f(p2[0])} ${f(p2[1])}`;
+  }
+  return d + (closed ? 'Z' : '');
+}
+const edgeNoise = {}; [82,140,146,204,210,268].forEach((r, i) => edgeNoise[r] = wobble(100 + i * 17, r > 200 ? 7 : 5));
+function organicCell(r0, r1, a0, a1, seed){
+  const R = rng(seed), pts = [], step = 4;
+  const j0 = (R() - .5) * 2.2, j1 = (R() - .5) * 2.2;
+  a0 += j0; a1 += j1;
+  for (let a = a0; a <= a1 + .01; a += (a1 - a0) / Math.ceil((a1 - a0) / step)) pts.push(pol(r1 + edgeNoise[r1](a), a));
+  for (let k = 1; k <= 3; k++){ const r = r1 - (r1 - r0) * k / 4; pts.push(pol(r, a1 + (R() - .5) * 1.4)); }
+  for (let a = a1; a >= a0 - .01; a -= (a1 - a0) / Math.ceil((a1 - a0) / step)) pts.push(pol(r0 + edgeNoise[r0](a), a));
+  for (let k = 1; k <= 3; k++){ const r = r0 + (r1 - r0) * k / 4; pts.push(pol(r, a0 + (R() - .5) * 1.4)); }
+  return smooth(pts);
+}
+function blob(cx, cy, r, seed, amp = .12){
+  const w = wobble(seed, r * amp), pts = [];
+  for (let a = 0; a < 360; a += 20) { const rr = r + w(a); pts.push([cx + rr * Math.sin(rad(a)), cy - rr * Math.cos(rad(a))]); }
+  return smooth(pts);
+}
+function wobblyArc(r, a0, a1, seed){
+  const w = wobble(seed, 3), pts = [];
+  const n = Math.max(4, Math.round(Math.abs(a1 - a0) / 4));
+  for (let i = 0; i <= n; i++){ const a = a0 + (a1 - a0) * i / n; pts.push(pol(r + w(a), a)); }
+  return smooth(pts, false);
+}
+function arcLine(r, a0, a1, sweep){
+  const [x1,y1] = pol(r, sweep ? a0 : a1), [x2,y2] = pol(r, sweep ? a1 : a0);
+  return `M${f(x1)} ${f(y1)}A${r} ${r} 0 0 ${sweep} ${f(x2)} ${f(y2)}`;
+}
+const col = id => `var(--${id.toLowerCase()})`;
+const RA = 322;
+const authorAngles = a => { const m = (a.span[0] + a.span[1]) / 2; return {core: m - 13, sup: m + 13}; };
+
+/* ---------- build map ---------- */
+function build(){
+  let s = `<defs>
+    <filter id="wc" x="-15%" y="-15%" width="130%" height="130%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="3" seed="4" result="warp"/>
+      <feDisplacementMap in="SourceGraphic" in2="warp" scale="10" xChannelSelector="R" yChannelSelector="G" result="d"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="4" seed="9" result="grain"/>
+      <feColorMatrix in="grain" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -0.9 1.2" result="ga"/>
+      <feComposite in="d" in2="ga" operator="in" result="g"/>
+      <feGaussianBlur in="g" stdDeviation="0.8"/>
+    </filter>
+    <filter id="wcEdge" x="-15%" y="-15%" width="130%" height="130%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="3" seed="4" result="warp"/>
+      <feDisplacementMap in="SourceGraphic" in2="warp" scale="10" xChannelSelector="R" yChannelSelector="G" result="d"/>
+      <feGaussianBlur in="d" stdDeviation="0.9"/>
+    </filter>
+    <filter id="pencil" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="2" seed="2" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="2.6" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="bleed" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="9"/></filter>
+    <clipPath id="cclip"><path d="${blob(C, CY, 74, 77, .07)}"/></clipPath>`;
+  AXES.forEach(a => {
+    const bottom = a.id === 'C' || a.id === 'D';
+    s += `<path id="lp-${a.id}" d="${bottom ? arcLine(294, a.span[0]+5, a.span[1]-5, 0) : arcLine(282, a.span[0]+5, a.span[1]-5, 1)}"/>`;
+  });
+  s += '</defs>';
+
+  // pencil guide around the whole field
+  s += `<g id="lGuide"><path d="${wobblyArc(RA, 0, 359.9, 5)}" fill="none" stroke="var(--hair)" stroke-width="1.2" filter="url(#pencil)"/></g>`;
+
+  // cells
+  s += '<g id="lCells">';
+  AXES.forEach((a, ai) => {
+    [1,2,3].forEach(l => {
+      const [r0,r1] = RAD[l];
+      const d = organicCell(r0, r1, a.span[0] + 2.2, a.span[1] - 2.2, 31 + ai * 7 + l * 3);
+      s += `<g class="cellg" tabindex="0" role="button" aria-label="Achse ${a.id} ${a.name}, Ebene ${l} ${LEVELS[l].name}" data-act="cell" data-axis="${a.id}" data-level="${l}">
+        <path class="wash" d="${d}" fill="${col(a.id)}" fill-opacity="${OPA[l]}" filter="url(#wc)"/>
+        <path class="edge" d="${d}" fill="none" stroke="${col(a.id)}" stroke-opacity="${Math.min(.9, OPA[l] + .25)}" stroke-width="1.8" filter="url(#wcEdge)"/>
+      </g>`;
+    });
+  });
+  s += '</g>';
+
+  // petals
+  s += '<g id="lPetals">';
+  AXES.forEach((a, ai) => {
+    [1,2,3].forEach(l => {
+      const list = a.bst.filter(b => b.l === l);
+      const [r0,r1] = RAD[l], rm = (r0 + r1) / 2;
+      list.forEach((b, i) => {
+        const R = rng(500 + ai * 13 + l * 5 + i);
+        const ang = a.span[0] + (a.span[1] - a.span[0]) * (i + 1) / (list.length + 1) + (R() - .5) * 6;
+        const [x,y] = pol(rm + (R() - .5) * 10, ang);
+        const sc = .85 + R() * .35, rot = ang + (R() - .5) * 30;
+        s += `<g class="petal" data-axis="${a.id}" data-level="${l}" transform="translate(${f(x)} ${f(y)}) rotate(${f(rot)}) scale(${f(sc)})"><path style="animation-delay:${f(-R() * 7)}s" d="M0,-14 C8,-7 7,6 0,14 C-7,6 -8,-7 0,-14Z M0,-11 L0,11" fill="${col(a.id)}" fill-opacity=".92" stroke="var(--paper)" stroke-width="1.6"/></g>`;
+      });
+    });
+  });
+  s += '</g>';
+
+  // level labels
+  s += '<g id="lLabels" style="pointer-events:none">';
+  [1,2,3].forEach(l => {
+    const [r0,r1] = RAD[l]; const rm = (r0 + r1) / 2;
+    s += `<text x="${C - rm}" y="${CY + 6}" text-anchor="middle" style="font-family:var(--hand)" font-size="18" fill="var(--ink-2)" stroke="var(--ground)" stroke-width="5" paint-order="stroke" stroke-linejoin="round">${l}</text>`;
+  });
+  AXES.forEach(a => {
+    s += `<text class="axislabel" data-act="axis" data-axis="${a.id}" fill="${col(a.id)}" style="pointer-events:auto"><textPath href="#lp-${a.id}" startOffset="50%" text-anchor="middle">${a.id} · ${a.name}</textPath></text>`;
+  });
+  s += '</g>';
+
+  // tensions
+  const P = (id, which) => { const a = AX[id], ang = authorAngles(a); return pol(RA, which === 'core' ? ang.core : ang.sup); };
+  const tDefs = [
+    {p0:P('A','sup'), p1:P('B','core'), c:pol(40,0)},
+    {p0:P('C','sup'), p1:P('D','core'), c:pol(40,180)},
+    {loop:true, p0:P('C','core')},
+    {p0:P('B','sup'), p1:P('D','sup'), c:pol(250,147)},
+    {p0:P('B','core'), p1:pol(76,40), c:pol(210,58)}
+  ];
+  s += '<g id="lTensions">';
+  tDefs.forEach((d, i) => {
+    let path, mx, my;
+    if (d.loop){
+      const [x,y] = d.p0; const [ax,ay] = pol(266,104), [bx,by] = pol(266,136);
+      path = `M${f(x)} ${f(y)}C${f(ax)} ${f(ay)} ${f(bx)} ${f(by)} ${f(x)} ${f(y)}`;
+      [mx,my] = pol(284,120);
+    } else {
+      const [x0,y0] = d.p0, [x1,y1] = d.p1, [qx,qy] = d.c;
+      path = `M${f(x0)} ${f(y0)}Q${f(qx)} ${f(qy)} ${f(x1)} ${f(y1)}`;
+      mx = .25*x0 + .5*qx + .25*x1; my = .25*y0 + .5*qy + .25*y1;
+    }
+    s += `<g class="tension" data-t="${i}"><path class="line" d="${path}" filter="url(#pencil)"/><g class="tmark" tabindex="0" role="button" aria-label="Spannungsfeld ${i+1}: ${TENSIONS[i].t}" data-act="tension" data-t="${i}"><path d="${blob(mx, my, 13, 900 + i, .1)}" fill="var(--paper)" stroke="var(--ink)" stroke-width="1.3" filter="url(#pencil)"/><circle cx="${f(mx)}" cy="${f(my)}" r="13" fill="transparent"/><text x="${f(mx)}" y="${f(my+6)}" text-anchor="middle" style="font-family:var(--hand)" font-size="19" fill="var(--ink)">${i+1}</text></g></g>`;
+  });
+  s += '</g>';
+
+  // authors
+  s += '<g id="lAuthors">';
+  AXES.forEach((a, ai) => {
+    const ang = authorAngles(a);
+    s += `<g class="author" data-axis="${a.id}"><path d="${wobblyArc(RA, ang.core, ang.sup, 60 + ai)}" fill="none" stroke="${col(a.id)}" stroke-width="1.6" stroke-linecap="round" filter="url(#pencil)"/></g>`;
+    const [cx,cy] = pol(RA, ang.core), [sx,sy] = pol(RA, ang.sup);
+    s += glyphGroup(a, 'core', cx, cy, ang.core, ai);
+    s += glyphGroup(a, 'sup', sx, sy, ang.sup, ai);
+  });
+  s += '</g>';
+
+  // center: four pigments meeting in balance
+  s += `<g id="lCenter"><g class="core-center" tabindex="0" role="button" aria-label="Leitidee: Gehaltene Balance" data-act="station" data-station="1">
+    <g class="breath">
+      <path d="${blob(C, CY, 74, 77, .07)}" fill="var(--paper)"/>
+      <g clip-path="url(#cclip)" style="mix-blend-mode:var(--blend)">
+        ${AXES.map(a => { const m = (a.span[0] + a.span[1]) / 2; const [x,y] = pol(62, m); return `<circle cx="${f(x)}" cy="${f(y)}" r="34" fill="${col(a.id)}" fill-opacity=".22" filter="url(#bleed)"/>`; }).join('')}
+      </g>
+      <path class="cblob" d="${blob(C, CY, 74, 77, .07)}" fill="none" stroke="var(--ink)" stroke-opacity=".45" stroke-width="1.3" filter="url(#pencil)"/>
+    </g>
+    <text x="${C}" y="${CY-6}" text-anchor="middle" style="font-family:var(--display);font-weight:700" font-size="17" fill="var(--ink)">Gehaltene</text>
+    <text x="${C}" y="${CY+14}" text-anchor="middle" style="font-family:var(--display);font-weight:700" font-size="17" fill="var(--ink)">Balance</text>
+    <text x="${C}" y="${CY+38}" text-anchor="middle" style="font-family:var(--hand)" font-size="16" fill="var(--ink-2)">nach Hillenbrand</text>
+  </g></g>`;
+  s += '<g id="lRipples"></g>';
+  return s;
+}
+
+function glyphGroup(a, which, x, y, ang, ai){
+  const sin = Math.sin(rad(ang));
+  const anchor = sin > .2 ? 'start' : sin < -.2 ? 'end' : 'middle';
+  const [lx, ly] = pol(RA + 26, ang);
+  const dy = Math.cos(rad(ang)) > .3 ? -6 : 8;
+  const name = which === 'core' ? a.core : a.sup.join(' · ');
+  const role = which === 'core' ? 'Kern' : 'Ergänzung';
+  let g = `<g class="author" tabindex="0" role="button" aria-label="${which === 'core' ? 'Kernautor' : 'Ergänzung'} ${name}, Achse ${a.id}" data-act="axis" data-axis="${a.id}">`;
+  g += `<circle cx="${f(x)}" cy="${f(y)}" r="22" fill="transparent"/>`;
+  g += '<g class="blot">';
+  if (which === 'core'){
+    g += `<path d="${blob(x, y, 11, 300 + ai, .18)}" fill="${col(a.id)}" fill-opacity=".85" filter="url(#wc)"/><path d="${blob(x, y, 11, 300 + ai, .18)}" fill="none" stroke="${col(a.id)}" stroke-width="1.4" filter="url(#wcEdge)"/>`;
+  } else if (a.sup.length > 1){
+    g += `<path d="${blob(x - 5, y, 8.5, 320, .15)}" fill="var(--ground)" stroke="${col(a.id)}" stroke-width="2.2" filter="url(#pencil)"/><path d="${blob(x + 5, y, 8.5, 321, .15)}" fill="none" stroke="${col(a.id)}" stroke-width="2.2" filter="url(#pencil)"/>`;
+  } else {
+    g += `<path d="${blob(x, y, 9.5, 330 + ai, .15)}" fill="var(--ground)" stroke="${col(a.id)}" stroke-width="2.2" filter="url(#pencil)"/>`;
+  }
+  g += '</g>';
+  g += `<text x="${f(lx)}" y="${f(ly+dy)}" text-anchor="${anchor}" style="font-family:var(--display);font-weight:600" font-size="15" fill="var(--ink)">${name}</text>`;
+  g += `<text x="${f(lx)}" y="${f(ly+dy+18)}" text-anchor="${anchor}" style="font-family:var(--hand)" font-size="17" fill="${col(a.id)}">${role}</text>`;
+  return g + '</g>';
+}
+
+const svg = document.getElementById('map');
+svg.innerHTML = build();
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- highlight ---------- */
+function highlight(h){
+  h = h || {};
+  svg.querySelectorAll('.cellg').forEach(el => {
+    const a = el.dataset.axis, l = +el.dataset.level;
+    let on = true;
+    if (h.axis && a !== h.axis) on = false;
+    if (h.level && l !== h.level) on = false;
+    el.classList.toggle('dim', !on);
+    el.classList.toggle('sel', !!(h.axis && h.level && on));
+  });
+  svg.querySelectorAll('.petal').forEach(el => {
+    let on = true;
+    if (h.axis && el.dataset.axis !== h.axis) on = false;
+    if (h.level && +el.dataset.level !== h.level) on = false;
+    el.classList.toggle('dim', !on);
+  });
+  svg.querySelectorAll('.author, .axislabel').forEach(el => {
+    el.classList.toggle('dim', !!(h.axis && el.dataset.axis !== h.axis));
+  });
+  svg.classList.toggle('show-t', h.mode === 'tensions');
+  svg.querySelectorAll('.tension').forEach(el => {
+    const i = +el.dataset.t;
+    el.classList.toggle('on', h.tension === i);
+    el.classList.toggle('off', h.mode === 'tensions' && h.tension != null && h.tension !== i);
+    el.style.opacity = (h.axis || h.level) && h.mode !== 'tensions' ? .12 : '';
+  });
+  const acc = h.axis ? col(h.axis) : h.mode === 'tensions' ? 'var(--ink)' : 'var(--ink-2)';
+  document.getElementById('panel').style.setProperty('--acc', acc);
+}
+
+/* ---------- resonance: a pigment ring blooms where the map is touched ---------- */
+const ripples = document.getElementById('lRipples');
+svg.addEventListener('pointerdown', e => {
+  if (reduce) return;
+  const m = svg.getScreenCTM(); if (!m) return;
+  const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(m.inverse());
+  const t = e.target.closest('[data-axis]');
+  const c = t ? col(t.dataset.axis) : 'var(--ink-2)';
+  const ns = 'http://www.w3.org/2000/svg';
+  [[0, 1.2, .55], [140, 1, .3]].forEach(([delay, w, o]) => {
+    const r = document.createElementNS(ns, 'circle');
+    r.setAttribute('cx', p.x); r.setAttribute('cy', p.y); r.setAttribute('r', 6);
+    r.setAttribute('fill', 'none'); r.setAttribute('stroke', c); r.setAttribute('stroke-width', w);
+    r.setAttribute('vector-effect', 'non-scaling-stroke'); r.setAttribute('filter', 'url(#pencil)');
+    r.setAttribute('class', 'ripple'); r.style.opacity = 0;
+    ripples.appendChild(r);
+    const anim = r.animate([{transform:'scale(1)', opacity:o}, {transform:'scale(9)', opacity:0}], {duration:1500, delay, easing:'cubic-bezier(.15,.7,.3,1)', fill:'forwards'});
+    anim.onfinish = () => r.remove();
+  });
+});
+
+/* ---------- inertia: layers drift with the pointer at different depths ---------- */
+if (!reduce){
+  const layers = [['lGuide',-2],['lCells',3],['lPetals',9],['lLabels',4],['lTensions',6],['lAuthors',5],['lCenter',-4]].map(([id,k]) => [document.getElementById(id), k]);
+  let tx = 0, ty = 0, x = 0, y = 0, raf = 0;
+  const tick = () => {
+    x += (tx - x) * .06; y += (ty - y) * .06;
+    layers.forEach(([el,k]) => el.setAttribute('transform', `translate(${f(x * k)} ${f(y * k)})`));
+    raf = (Math.abs(tx - x) > .001 || Math.abs(ty - y) > .001) ? requestAnimationFrame(tick) : 0;
+  };
+  const box = document.getElementById('mapbox');
+  box.addEventListener('pointermove', e => {
+    if (e.pointerType === 'touch') return;
+    const r = box.getBoundingClientRect();
+    tx = (e.clientX - r.left) / r.width - .5; ty = (e.clientY - r.top) / r.height - .5;
+    if (!raf) raf = requestAnimationFrame(tick);
+  });
+  box.addEventListener('pointerleave', () => { tx = 0; ty = 0; if (!raf) raf = requestAnimationFrame(tick); });
+}
+
+/* ---------- panel renderers ---------- */
+const leaf = c => `<svg class="leaf" width="12" height="18" viewBox="-6 -9 12 18" aria-hidden="true"><path d="M0,-8 C5,-4 5,4 0,8 C-5,4 -5,-4 0,-8Z" fill="${c}"/></svg>`;
+
+function pOverview(){
+  return `<div class="eyebrow">Überblick</div>
+  <h2>Eine Karte für die Förderung im Bereich emotionale und soziale Entwicklung</h2>
+  <p class="lead">Das Konzept verbindet vier Kernautoren mit je einem Ergänzungsautor. Zusammen beantworten sie, <em>warum</em> Jugendliche aus der Balance geraten und <em>wie</em> Schule sie hält.</p>
+  <h3>So liest man die Karte</h3>
+  <p>Die vier Farbfelder sind die <b>Achsen</b>. Die Ringe sind die <b>Ebenen</b> des Mehrebenenmodells nach Hillenbrand: außen universell für alle, innen intensiv für Einzelne. Je satter das Pigment, desto intensiver die Förderung.</p>
+  <p>Am Rand stehen die Autoren: Farbtupfer sind Kernautoren, gezeichnete Ringe die Ergänzungen. Die Blätter sind die zwölf Praxisbausteine. Die Bleistiftlinien markieren fünf Spannungsfelder zwischen den Ansätzen.</p>
+  <p class="note">Mit den Pfeilen oben oder den Pfeiltasten führt die Karte durch neun Stationen. Jedes Feld der Karte lässt sich auch direkt berühren.</p>`;
+}
+function pLeitidee(){
+  return `<div class="eyebrow">Leitidee</div>
+  <h2>Balance braucht Halt</h2>
+  <p class="lead">Verhaltensauffälligkeit wird als misslingende Identitätsbalance verstanden. Jugendliche können die Ansprüche von außen und das eigene Selbst nicht mehr ausgleichen. Sie reagieren mit Angriff, Rückzug oder Flucht.</p>
+  <p>Krappmanns Grundqualifikationen (Rollendistanz, Empathie, Ambiguitätstoleranz, Identitätsdarstellung) lassen sich nur dort erproben, wo der Rahmen nicht selbst schwankt. Schule hält auf vier Arten:</p>
+  <div class="halt">${AXES.map(a => `<button data-act="axis" data-axis="${a.id}" style="--acc2:${col(a.id)}"><b>${a.halt}</b><span>${a.haltText}</span></button>`).join('')}</div>
+  <p>Hillenbrand liefert den Rahmen, in dem die vier Achsen gestuft wirken: das Mehrebenenmodell und die didaktische Brücke zwischen Regelunterricht und ESE-Förderung.</p>`;
+}
+function pAxis(id){
+  const a = AX[id], c = col(id);
+  return `<div class="eyebrow" style="color:${c}">Achse ${a.id} · Halt durch ${a.halt}</div>
+  <h2>${a.name}</h2>
+  <dl class="pair">
+    <dt>Kern</dt><dd><b>${a.core}</b><br>${a.coreWhat}</dd>
+    <dt>Ergänzung</dt><dd><b>${a.sup.join(' · ')}</b><br>${a.supWhat}</dd>
+  </dl>
+  <p class="quote" style="--acc2:${c}">${a.question}</p>
+  <p>${a.nutzen}</p>
+  <h3>Auf drei Ebenen</h3>
+  <ul class="lvls">${[1,2,3].map(l => `<li data-act="cell" data-axis="${id}" data-level="${l}" tabindex="0" role="button"><span class="sw" style="--acc2:${c};opacity:${OPA[l]+.15}"></span><span><small>EBENE ${l} · ${LEVELS[l].name.toUpperCase()}</small>${a.cells[l]}</span></li>`).join('')}</ul>
+  <h3>Praxisbausteine</h3>
+  <ul class="bst">${a.bst.map(b => `<li>${leaf(c)}<span><b>${b.t}</b> <span class="tag">Ebene ${b.l}</span><br>${b.d}</span></li>`).join('')}</ul>
+  <h3>Woran wir Wirkung erkennen</h3>
+  <p class="indic">${a.indic}</p>
+  <p class="note"><b>Schärfung.</b> ${a.schaerfung}</p>`;
+}
+function pCell(id, l){
+  const a = AX[id], c = col(id);
+  const bs = a.bst.filter(b => b.l === l);
+  return `<div class="eyebrow" style="color:${c}">Achse ${a.id} · ${a.name} × Ebene ${l}</div>
+  <h2>${LEVELS[l].name[0].toUpperCase() + LEVELS[l].name.slice(1)}: ${a.halt}</h2>
+  <p class="tag">${LEVELS[l].who}</p>
+  <p class="lead">${a.cells[l]}</p>
+  ${bs.length ? `<h3>Bausteine auf dieser Ebene</h3><ul class="bst">${bs.map(b => `<li>${leaf(c)}<span><b>${b.t}</b><br>${b.d}</span></li>`).join('')}</ul>` : ''}
+  <div class="chips"><button class="chip" data-act="axis" data-axis="${id}">ganze Achse ${id}</button><button class="chip" data-act="level" data-level="${l}">ganze Ebene ${l}</button></div>`;
+}
+function pEbenen(sel){
+  return `<div class="eyebrow">Mehrebenenmodell nach Hillenbrand</div>
+  <h2>Drei Ebenen, steigende Intensität</h2>
+  <p>Jede höhere Ebene ergänzt die darunter, ersetzt sie aber nicht. Auch ein Jugendlicher auf Ebene 3 bleibt Teil der Klasse und ihrer Routinen.</p>
+  <ul class="lvls">${[1,2,3].map(l => `<li data-act="level" data-level="${l}" tabindex="0" role="button" style="${sel===l?'background:var(--ground)':''}"><span class="sw" style="--acc2:var(--ink);opacity:${OPA[l]+.05}"></span><span><small>EBENE ${l} · ${LEVELS[l].name.toUpperCase()}</small>${LEVELS[l].who}</span></li>`).join('')}</ul>
+  ${sel ? `<h3>Ebene ${sel} auf allen Achsen</h3><ul class="bst">${AXES.map(a => `<li>${leaf(col(a.id))}<span><b>${a.id} · ${a.name}</b><br>${a.cells[sel]}</span></li>`).join('')}</ul>` : '<p class="note">Eine Ebene antippen, um sie auf allen vier Achsen zu sehen.</p>'}
+  <p class="note">Der Übergang zwischen den Ebenen wird nicht nach Gefühl entschieden, sondern in der Förderplankonferenz begründet. Eine Rückstufung gilt ausdrücklich als Erfolg.</p>`;
+}
+function pTensions(sel){
+  const t = sel != null ? TENSIONS[sel] : null;
+  return `<div class="eyebrow">Spannungsfelder</div>
+  <h2>Fünf Spannungen, offen benannt</h2>
+  <p>Die acht Autoren kommen aus unterschiedlichen Traditionen. Das Konzept wird glaubwürdiger, wenn es diese Spannungen benennt, statt sie zu glätten.</p>
+  <ul class="tlist">${TENSIONS.map((x,i) => `<li data-act="tension" data-t="${i}" tabindex="0" role="button" class="${sel===i?'cur':''}"><span class="num">${i+1}</span><span><b>${x.t}</b><small>${x.who}</small></span></li>`).join('')}</ul>
+  ${t ? `<h3>${sel+1} · ${t.t}</h3><p>${t.what}</p><p class="quote" style="--acc2:var(--ink)">${t.res}</p>` : ''}`;
+}
+function pKreislauf(){
+  return `<div class="eyebrow">Wogegen das Konzept arbeitet</div>
+  <h2>Eskalation, Ausschluss, Abbruch</h2>
+  <p class="lead">Strafe führt zu Rückzug, Rückzug zu Absentismus, Absentismus zum Abbruch. Jede Achse unterbricht diesen Kreislauf an einer anderen Stelle.</p>
+  <ul class="bst">${CHAIN.filter(x => x.gate).map(x => `<li>${leaf(col(x.gate))}<span><b>${x.gate} · ${AX[x.gate].name}</b><br>${x.why}</span></li>`).join('')}</ul>
+  <button class="linkbtn" data-act="scroll-cycle">Kette unter der Karte ansehen ↓</button>`;
+}
+
+/* ---------- stations ---------- */
+const STATIONS = [
+  {label:'Überblick', show:() => [pOverview(), {}]},
+  {label:'Leitidee', show:() => [pLeitidee(), {}]},
+  {label:'Achse A', dc:'A', show:() => [pAxis('A'), {axis:'A'}]},
+  {label:'Achse B', dc:'B', show:() => [pAxis('B'), {axis:'B'}]},
+  {label:'Achse C', dc:'C', show:() => [pAxis('C'), {axis:'C'}]},
+  {label:'Achse D', dc:'D', show:() => [pAxis('D'), {axis:'D'}]},
+  {label:'Ebenen', show:() => [pEbenen(null), {}]},
+  {label:'Spannungen', show:() => [pTensions(null), {mode:'tensions'}]},
+  {label:'Kreislauf', show:() => [pKreislauf(), {}]}
+];
+let cur = 0;
+const pbody = document.getElementById('pbody');
+const dots = document.getElementById('dots');
+dots.innerHTML = STATIONS.map((s,i) => `<button role="tab" aria-label="${i+1}: ${s.label}" title="${s.label}" data-i="${i}" ${s.dc ? `style="--dc:${col(s.dc)}"` : ''}></button>`).join('');
+
+function render(html, hl, stationIndex){
+  pbody.innerHTML = html;
+  pbody.scrollTop = 0;
+  highlight(hl);
+  if (stationIndex != null) cur = stationIndex;
+  dots.querySelectorAll('button').forEach((b,i) => { if (i === cur) b.setAttribute('aria-current','step'); else b.removeAttribute('aria-current'); });
+  document.getElementById('steplabel').textContent = `${cur+1} / ${STATIONS.length}`;
+  document.getElementById('prev').disabled = cur === 0;
+  document.getElementById('next').disabled = cur === STATIONS.length - 1;
+  document.querySelectorAll('.gate[data-axis]').forEach(g => g.style.opacity = hl && hl.axis && g.dataset.axis !== hl.axis ? .3 : '');
+}
+function go(i){
+  i = Math.max(0, Math.min(STATIONS.length - 1, i));
+  const [html, hl] = STATIONS[i].show();
+  render(html, hl, i);
+}
+const stationOfAxis = id => ({A:2,B:3,C:4,D:5})[id];
+
+/* ---------- chain: pebbles and brush strokes ---------- */
+document.getElementById('chain').innerHTML = CHAIN.map((x, i) => {
+  if (!x.gate) return `<div class="st${x.end ? ' end' : ''}"><b>${x.st}</b><span>${x.d}</span></div>`;
+  const R = rng(700 + i), wv = () => f((R() - .5) * 5);
+  return `<button class="gate" data-act="axis" data-axis="${x.gate}" aria-label="Achse ${x.gate}: ${x.why}">
+    <svg viewBox="0 0 100 56" aria-hidden="true"><path d="M2 28 C 30 ${f(26 + (R() - .5) * 4)}, 70 ${f(30 + (R() - .5) * 4)}, 98 28" fill="none" stroke="var(--ink-2)" stroke-width="1.2" stroke-dasharray="2 4" filter="url(#pencil)"/>
+    <path class="stroke" d="M${f(46 + +wv())} 4 C ${f(58 + +wv())} 14, ${f(40 + +wv())} 40, ${f(52 + +wv())} 52" fill="none" stroke="${col(x.gate)}" stroke-width="7" stroke-linecap="round" stroke-opacity=".82" filter="url(#wcEdge)"/></svg>
+    <small>${x.gate} · ${x.why}</small></button>`;
+}).join('');
+
+/* ---------- events ---------- */
+function act(el){
+  const k = el.dataset.act;
+  if (k === 'axis') render(pAxis(el.dataset.axis), {axis:el.dataset.axis}, stationOfAxis(el.dataset.axis));
+  else if (k === 'cell') render(pCell(el.dataset.axis, +el.dataset.level), {axis:el.dataset.axis, level:+el.dataset.level}, stationOfAxis(el.dataset.axis));
+  else if (k === 'level') render(pEbenen(+el.dataset.level), {level:+el.dataset.level}, 6);
+  else if (k === 'tension') render(pTensions(+el.dataset.t), {mode:'tensions', tension:+el.dataset.t}, 7);
+  else if (k === 'station') go(+el.dataset.station);
+  else if (k === 'scroll-cycle') document.getElementById('cycle').scrollIntoView({behavior: reduce ? 'auto' : 'smooth'});
+}
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]');
+  if (el) { act(el); return; }
+  const d = e.target.closest('#dots button');
+  if (d) go(+d.dataset.i);
+});
+document.addEventListener('keydown', e => {
+  const tag = (e.target.tagName || '').toLowerCase();
+  const actEl = e.target.closest && e.target.closest('[data-act]');
+  if ((e.key === 'Enter' || e.key === ' ') && actEl && tag !== 'button') { e.preventDefault(); act(actEl); return; }
+  if (tag === 'input' || tag === 'textarea') return;
+  if (e.key === 'ArrowRight') go(cur + 1);
+  if (e.key === 'ArrowLeft') go(cur - 1);
+});
+document.getElementById('prev').addEventListener('click', () => go(cur - 1));
+document.getElementById('next').addEventListener('click', () => go(cur + 1));
+
+go(0);
+})();
+</script>
+
+</body>
+</html>
